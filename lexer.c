@@ -31,7 +31,7 @@ token_t *tokenize(char *s, int *tokc_p) {
       tokvec = realloc(tokvec, sizeof(token_t) * (capacity + 1));
     }
 
-    size_t l = strcspn(s, " |&<>;!"); //szuka znaku z " " w s
+    size_t l = strcspn(s, " |&<>;!");
     if (l > 0) {
       tokvec[ntoks++] = s;
       s += l;
@@ -72,28 +72,5 @@ token_t *tokenize(char *s, int *tokc_p) {
 
   tokvec[ntoks] = NULL;
   *tokc_p = ntoks;
-  
-  int i = 0;
-  while(tokvec[i] != NULL)
-  {
-  	char* a = tokvec[i];
-  	
-  	if(tokvec[i] == T_NULL) printf("T_NULL");
-  	else if(tokvec[i] == T_OR) printf("T_OR");
-  	else if(tokvec[i] == T_PIPE) printf("T_PIPE");
-  	else if(tokvec[i] == T_AND) printf("T_AND");
-  	else if(tokvec[i] == T_BGJOB) printf("T_BGJOB");
-  	else if(tokvec[i] == T_INPUT) printf("T_INPUT");
-  	else if(tokvec[i] == T_OUTPUT) printf("T_OUTPUT");
-  	else if(tokvec[i] == T_COLON) printf("T_COLON");
-  	else if(tokvec[i] == T_APPEND) printf("T_APPEND");
-  	else if(tokvec[i] == T_BANG) printf("T_BANG");
-  	else while(*a != '\0'){ printf("%c", *a); a++;} 
-	
-	printf("\n"); 
-	
-	i++;	
-  }
-  
   return tokvec;
 }

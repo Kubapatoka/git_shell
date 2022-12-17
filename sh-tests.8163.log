@@ -1,0 +1,291 @@
+>>> Test: "TestShellSimple.test_exitcode_1"
+# true &
+[1] running 'true'
+# jobs
+[1] exited 'true', status=0
+# false &
+[1] running 'false'
+# jobs
+[1] exited 'false', status=1
+# exit
+
+>>> Test: "TestShellSimple.test_fd_leaks"
+# ls -l /proc/self/fd
+total 0
+lrwx------ 1 jakub jakub 64 Dec 16 17:34 0 -> /dev/pts/4
+lrwx------ 1 jakub jakub 64 Dec 16 17:34 1 -> /dev/pts/4
+lrwx------ 1 jakub jakub 64 Dec 16 17:34 2 -> /dev/pts/4
+lr-x------ 1 jakub jakub 64 Dec 16 17:34 3 -> /proc/8181/fd
+# ls -l /proc/self/fd | cat
+# exit
+
+>>> Test: "TestShellSimple.test_kill_at_quit"
+# sleep 1000 &
+[1] running 'sleep 1000'
+# sleep 2000 &
+[2] running 'sleep 2000'
+# jobs
+[1] running 'sleep 1000'
+[2] running 'sleep 2000'
+# 
+exit
+
+>>> Test: "TestShellSimple.test_kill_jobs"
+# sleep 1000 &
+[1] running 'sleep 1000'
+# sleep 2000 &
+[2] running 'sleep 2000'
+# jobs
+[1] running 'sleep 1000'
+[2] running 'sleep 2000'
+# kill %2
+jobs
+# [1] running 'sleep 1000'
+[2] running 'sleep 2000'
+# TEST: expected "[2] killed 'sleep 2000' by signal 15"
+exit
+
+>>> Test: "TestShellSimple.test_kill_suspended"
+# cat &
+[1] running 'cat'
+# jobs
+/usr/bin/cat: -: Input/output error
+[1] exited 'cat', status=1
+# TEST: expected "suspended 'cat'"
+exit
+
+>>> Test: "TestShellSimple.test_pipeline_1"
+# grep LIST include/queue.h | wc -l
+# exit
+
+>>> Test: "TestShellSimple.test_pipeline_2"
+# cat include/queue.h | cat | grep LIST | cat | wc -l
+# exit
+
+>>> Test: "TestShellSimple.test_pipeline_3"
+# cat < include/queue.h | grep LIST | wc -l > /tmp/tmph4e57zd7
+# exit
+
+>>> Test: "TestShellSimple.test_redir_1"
+# wc -l include/queue.h >/tmp/tmpm06t4l92
+# wc -l < include/queue.h
+587
+# wc -l < include/queue.h >/tmp/tmpqn5jp69d
+# exit
+
+>>> Test: "TestShellSimple.test_redir_2"
+# wc -l /tmp/tmplzwyhp5_ >/tmp/tmp7jjggjws
+# exit
+
+>>> Test: "TestShellSimple.test_resume_suspended"
+# cat &
+[1] running 'cat'
+/usr/bin/cat: -# : Input/output error
+jobs
+[1] exited 'cat', status=1
+# TEST: expected "suspended 'cat'"
+exit
+
+>>> Test: "TestShellWithSyscalls.test_quit"
+[8278:8278] tcsetpgrp(3, 8278) = 0
+# quit
+exit
+
+>>> Test: "TestShellWithSyscalls.test_sigint"
+[8287:8287] tcsetpgrp(3, 8287) = 0
+# cat
+[8287:8287] fork() = 8288
+[8288:8288] setpgid(0, 0) = 0
+[8288:8288] execve("/usr/bin/cat", 0x6080000000a0, 0x7ffdc716d198)
+[8287:8287] kill(-8288, SIGCONT) = 0
+[8287:8287] tcsetpgrp(3, 8288) = 0
+[8287:8287] tcsetattr(3, 1, 0x608000000030) = 0
+TEST: expected "\[(\d+):(\d+)\] waitpid\(([^)]*)\)([^]*)
+"
+exit
+
+>>> Test: "TestShellWithSyscalls.test_sigtstp"
+[8299:8299] tcsetpgrp(3, 8299) = 0
+# cat
+[8299:8299] fork() = 8301
+[8299:8299] kill(-8301, SIGCONT) = -1
+[8299:8299] tcsetpgrp(3, 8301) = 0
+[8299:8299] tcsetattr(3, 1, 0x608000000030) = 0
+[8301:8301] setpgid(0, 0) = 0
+[8301:8301] execve("/usr/bin/cat", 0x6080000000a0, 0x7ffe1c453468)
+[8299:8299] waitpid(...) -> {}
+TEST: expected "\[(\d+):(\d+)\] waitpid\(([^)]*)\)([^]*)
+"
+exit
+
+>>> Test: "TestShellWithSyscalls.test_termattr_1"
+[8323:8323] tcsetpgrp(3, 8323) = 0
+# stty -a
+[8323:8323] fork() = 8325
+[8323:8323] kill(-8325, SIGCONT) = -1
+[8323:8323] tcsetpgrp(3, 8325) = 0
+[8323:8323] tcsetattr(3, 1, 0x608000000030) = 0
+[8325:8325] setpgid(0, 0) = 0
+[8325:8325] execve("/usr/bin/stty", 0x6080000000a0, 0x7ffc38ee5a98)
+speed 38400 baud; rows 24; columns 80; line = 0;
+intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>;
+eol2 = <undef>; swtch = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R;
+werase = ^W; lnext = ^V; discard = ^O; min = 1; time = 0;
+-parenb -parodd -cmspar cs8 -hupcl -cstopb cread -clocal -crtscts
+-ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff
+-iuclc -ixany -imaxbel -iutf8
+opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0
+isig icanon iexten -echo echoe echok -echonl -noflsh -xcase -tostop -echoprt
+echoctl echoke -flusho -extproc
+[8323:8323] waitpid(...) -> {pid=8325, status=0}
+[8323:8323] waitpid(...) -> {}
+[8323:8323] tcsetattr(3, 1, 0x7ffc38ee54d0) = 0
+[8323:8323] tcsetpgrp(3, 8323) = 0
+# more shell.c
+[8323:8323] fork() = 8329
+[8323:8323] kill(-8329, SIGCONT) = -1
+[8323:8323] tcsetpgrp(3, 8329) = 0
+[8323:8323] tcsetattr(3, 1, 0x608000000030) = 0
+[8329:8329] setpgid(0, 0) = 0
+[8329:8329] execve("/usr/bin/more", 0x608000000120, 0x7ffc38ee5a98)
+q[8329:8329] tcsetattr(2, 0, 0x7ffe56c0aa80) = 0
+#ifdef READLINE
+#include <readline/readline.h>
+#include <readline/history.h>
+#endif
+
+#define DEBUG 0
+#include "shell.h"
+
+sigset_t sigchld_mask;
+
+static void sigint_handler(int sig) {
+  /* No-op handler, we just need break read() call with EINTR. */
+  (void)sig;
+}
+
+/* Rewrite closed file descriptors to -1,
+ * to make sure we don't attempt do close them twice. */
+static void MaybeClose(int *fdp) {
+  if (*fdp < 0)
+    return;
+  Close(*fdp);
+  *fdp = -1;
+}
+[7m--More--(6%)[27m[8329:8329] tcsetattr(2, 0, 0x7ffe56c0aabc) = 0
+[K[8323:8323] waitpid(...) -> {pid=8329, status=0}
+[8323:8323] waitpid(...) -> {}
+[8323:8323] tcsetattr(3, 1, 0x7ffc38ee54d0) = 0
+[8323:8323] tcsetpgrp(3, 8323) = 0
+# stty -a
+[8323:8323] fork() = 8334
+[8334:8334] setpgid(0, 0) = 0
+[8334:8334] execve("/usr/bin/stty", 0x6080000001a0, 0x7ffc38ee5a98)
+[8323:8323] kill(-8334, SIGCONT) = 0
+[8323:8323] tcsetpgrp(3, 8334) = 0
+[8323:8323] tcsetattr(3, 1, 0x608000000030) = 0
+speed 38400 baud; rows 24; columns 80; line = 0;
+intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>;
+eol2 = <undef>; swtch = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R;
+werase = ^W; lnext = ^V; discard = ^O; min = 1; time = 0;
+-parenb -parodd -cmspar cs8 -hupcl -cstopb cread -clocal -crtscts
+-ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff
+-iuclc -ixany -imaxbel -iutf8
+opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0
+isig icanon iexten -echo echoe echok -echonl -noflsh -xcase -tostop -echoprt
+echoctl echoke -flusho -extproc
+[8323:8323] waitpid(...) -> {pid=8334, status=0}
+[8323:8323] waitpid(...) -> {}
+[8323:8323] tcsetattr(3, 1, 0x7ffc38ee54d0) = 0
+[8323:8323] tcsetpgrp(3, 8323) = 0
+# exit
+
+>>> Test: "TestShellWithSyscalls.test_termattr_2"
+[8336:8336] tcsetpgrp(3, 8336) = 0
+# stty -a
+[8336:8336] fork() = 8337
+[8336:8336] kill(-8337, SIGCONT) = -1
+[8336:8336] tcsetpgrp(3, 8337) = 0
+[8336:8336] tcsetattr(3, 1, 0x608000000030) = 0
+[8337:8337] setpgid(0, 0) = 0
+[8337:8337] execve("/usr/bin/stty", 0x6080000000a0, 0x7ffd19ea5b98)
+speed 38400 baud; rows 24; columns 80; line = 0;
+intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>;
+eol2 = <undef>; swtch = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R;
+werase = ^W; lnext = ^V; discard = ^O; min = 1; time = 0;
+-parenb -parodd -cmspar cs8 -hupcl -cstopb cread -clocal -crtscts
+-ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff
+-iuclc -ixany -imaxbel -iutf8
+opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0
+isig icanon iexten -echo echoe echok -echonl -noflsh -xcase -tostop -echoprt
+echoctl echoke -flusho -extproc
+[8336:8336] waitpid(...) -> {pid=8337, status=0}
+[8336:8336] waitpid(...) -> {}
+[8336:8336] tcsetattr(3, 1, 0x7ffd19ea55d0) = 0
+[8336:8336] tcsetpgrp(3, 8336) = 0
+# more shell.c
+[8336:8336] fork() = 8339
+[8336:8336] kill(-8339, SIGCONT) = -1
+[8336:8336] tcsetpgrp(3, 8339) = 0
+[8336:8336] tcsetattr(3, 1, 0x608000000030) = 0
+[8339:8339] setpgid(0, 0) = 0
+[8339:8339] execve("/usr/bin/more", 0x608000000120, 0x7ffd19ea5b98)
+[8339:8339] tcsetattr(2, 0, 0x7ffce800f430) = 0
+#ifdef READLINE
+#include <readline/readline.h>
+#include <readline/history.h>
+#endif
+
+#define DEBUG 0
+#include "shell.h"
+
+sigset_t sigchld_mask;
+
+static void sigint_handler(int sig) {
+  /* No-op handler, we just need break read() call with EINTR. */
+  (void)sig;
+}
+
+/* Rewrite closed file descriptors to -1,
+ * to make sure we don't attempt do close them twice. */
+static void MaybeClose(int *fdp) {
+  if (*fdp < 0)
+    return;
+  Close(*fdp);
+  *fdp = -1;
+}
+[7m--More--(6%)[27m[8339:8339] tcsetattr(2, 0, 0x7ffce800f46c) = 0
+[8336:8336] waitpid(...) -> {}
+TEST: expected "\[(\d+):(\d+)\] waitpid\(([^)]*)\)([^]*)
+"
+exit
+
+>>> Test: "TestShellWithSyscalls.test_terminate_tstped"
+[8348:8348] tcsetpgrp(3, 8348) = 0
+# cat
+[8348:8348] fork() = 8350
+[8348:8348] kill(-8350, SIGCONT) = -1
+[8348:8348] tcsetpgrp(3, 8350) = 0
+[8348:8348] tcsetattr(3, 1, 0x608000000030) = 0
+[8350:8350] setpgid(0, 0) = 0
+[8350:8350] execve("/usr/bin/cat", 0x6080000000a0, 0x7ffe14e1e868)
+[8348:8348] waitpid(...) -> {}
+TEST: expected "\[(\d+):(\d+)\] waitpid\(([^)]*)\)([^]*)
+"
+exit
+
+>>> Test: "TestShellWithSyscalls.test_terminate_ttined"
+[8362:8362] tcsetpgrp(3, 8362) = 0
+# cat &
+[8362:8362] fork() = 8364
+[8364:8364] setpgid(0, 0) = 0
+[1] running 'cat'
+# [8364:8364] execve("/usr/bin/cat", 0x6080000000a0, 0x7fffe4e89c18)
+/usr/bin/cat: -: Input/output error
+[8364:8364] close(0) = 0
+[8362:8362] waitpid(...) -> {pid=8364, status=1}
+[8362:8362] waitpid(...) -> {}
+TEST: expected "\[(\d+):(\d+)\] waitpid\(([^)]*)\)([^]*)
+"
+exit
+

@@ -1,0 +1,373 @@
+>>> Test: "TestShellSimple.test_exitcode_1"
+# true &
+# AddressSanitizer:DEADLYSIGNAL
+=================================================================
+[1m[31m==54860==ERROR: AddressSanitizer: SEGV on unknown address (pc 0x564a0fe29854 bp 0x7fff765084a0 sp 0x7fff76508490 T0)
+[1m[0m==54860==The signal is caused by a READ memory access.
+==54860==Hint: this fault was caused by a dereference of a high value address (see register values below).  Dissassemble the provided pc to learn which register was used.
+    #0 0x564a0fe29854 in sigchld_handler /home/jakub/Desktop/SO/shell_own/jobs.c:50
+    #1 0x7faa3e33851f  (/lib/x86_64-linux-gnu/libc.so.6+0x4251f)
+    #2 0x7faa3e40a98f in __GI___libc_read ../sysdeps/unix/sysv/linux/read.c:26
+    #3 0x7faa3e5b1509 in __interceptor_read ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:1027
+    #4 0x564a0fe27619 in read /usr/include/x86_64-linux-gnu/bits/unistd.h:38
+    #5 0x564a0fe27619 in readline /home/jakub/Desktop/SO/shell_own/shell.c:258
+    #6 0x564a0fe27910 in main /home/jakub/Desktop/SO/shell_own/shell.c:302
+    #7 0x7faa3e31fd8f in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #8 0x7faa3e31fe3f in __libc_start_main_impl ../csu/libc-start.c:392
+    #9 0x564a0fe269a4 in _start (/home/jakub/Desktop/SO/shell_own/shell+0x49a4)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /home/jakub/Desktop/SO/shell_own/jobs.c:50 in sigchld_handler
+==54860==ABORTING
+exit
+
+>>> Test: "TestShellSimple.test_fd_leaks"
+# ls -l /proc/self/fd
+total 0
+lrwx------ 1 jakub jakub 64 Dec 15 19:07 0 -> /dev/pts/3
+lrwx------ 1 jakub jakub 64 Dec 15 19:07 1 -> /dev/pts/3
+lrwx------ 1 jakub jakub 64 Dec 15 19:07 2 -> /dev/pts/3
+lr-x------ 1 jakub jakub 64 Dec 15 19:07 3 -> /proc/54869/fd
+# ls -l /proc/self/fd | cat
+# exit
+
+>>> Test: "TestShellSimple.test_kill_at_quit"
+# sleep 1000 &
+# TEST: expected "[1] running 'sleep 1000'"
+exit
+
+>>> Test: "TestShellSimple.test_kill_jobs"
+# sleep 1000 &
+# TEST: expected "[1] running 'sleep 1000'"
+exit
+
+>>> Test: "TestShellSimple.test_kill_suspended"
+# cat &
+/usr/bin/cat: -: Input/output error
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+[1m[31m==54903==ERROR: AddressSanitizer: SEGV on unknown address (pc 0x558185250854 bp 0x7ffc006c6da0 sp 0x7ffc006c6d90 T0)
+[1m[0m==54903==The signal is caused by a READ memory access.
+==54903==Hint: this fault was caused by a dereference of a high value address (see register values below).  Dissassemble the provided pc to learn which register was used.
+    #0 0x558185250854 in sigchld_handler /home/jakub/Desktop/SO/shell_own/jobs.c:50
+    #1 0x7f162ae7551f  (/lib/x86_64-linux-gnu/libc.so.6+0x4251f)
+    #2 0x7f162aecec9a in __GI___pthread_sigmask nptl/pthread_sigmask.c:40
+    #3 0x7f162ae7571c in __GI___sigprocmask ../sysdeps/unix/sysv/linux/sigprocmask.c:25
+    #4 0x7f162b10a1f4 in __interceptor_sigprocmask ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:4157
+    #5 0x55818524ef5a in Sigprocmask libcsapp/Sigprocmask.c:4
+    #6 0x55818524e25e in do_job /home/jakub/Desktop/SO/shell_own/shell.c:152
+    #7 0x55818524e5b4 in eval /home/jakub/Desktop/SO/shell_own/shell.c:243
+    #8 0x55818524e941 in main /home/jakub/Desktop/SO/shell_own/shell.c:311
+    #9 0x7f162ae5cd8f in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #10 0x7f162ae5ce3f in __libc_start_main_impl ../csu/libc-start.c:392
+    #11 0x55818524d9a4 in _start (/home/jakub/Desktop/SO/shell_own/shell+0x49a4)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /home/jakub/Desktop/SO/shell_own/jobs.c:50 in sigchld_handler
+==54903==ABORTING
+exit
+
+>>> Test: "TestShellSimple.test_pipeline_1"
+# grep LIST include/queue.h | wc -l
+# exit
+
+>>> Test: "TestShellSimple.test_pipeline_2"
+# cat include/queue.h | cat | grep LIST | cat | wc -l
+# exit
+
+>>> Test: "TestShellSimple.test_pipeline_3"
+# cat < include/queue.h | grep LIST | wc -l > /tmp/tmp00pi6tqa
+# exit
+
+>>> Test: "TestShellSimple.test_redir_1"
+# wc -l include/queue.h >/tmp/tmp1xxfngp1
+# wc -l < include/queue.h
+587
+# wc -l < include/queue.h >/tmp/tmpep67bze1
+# exit
+
+>>> Test: "TestShellSimple.test_redir_2"
+# wc -l /tmp/tmpsyj8_lvh >/tmp/tmpzxnbp2wl
+# exit
+
+>>> Test: "TestShellSimple.test_resume_suspended"
+# cat &
+/usr/bin/cat: -: Input/output error
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+[1m[31m==54929==ERROR: AddressSanitizer: SEGV on unknown address (pc 0x55fcdff98854 bp 0x7ffd1e9e71a0 sp 0x7ffd1e9e7190 T0)
+[1m[0m==54929==The signal is caused by a READ memory access.
+==54929==Hint: this fault was caused by a dereference of a high value address (see register values below).  Dissassemble the provided pc to learn which register was used.
+    #0 0x55fcdff98854 in sigchld_handler /home/jakub/Desktop/SO/shell_own/jobs.c:50
+    #1 0x7fe9f878b51f  (/lib/x86_64-linux-gnu/libc.so.6+0x4251f)
+    #2 0x7fe9f87e4c9a in __GI___pthread_sigmask nptl/pthread_sigmask.c:40
+    #3 0x7fe9f878b71c in __GI___sigprocmask ../sysdeps/unix/sysv/linux/sigprocmask.c:25
+    #4 0x7fe9f8a201f4 in __interceptor_sigprocmask ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:4157
+    #5 0x55fcdff96f5a in Sigprocmask libcsapp/Sigprocmask.c:4
+    #6 0x55fcdff9625e in do_job /home/jakub/Desktop/SO/shell_own/shell.c:152
+    #7 0x55fcdff965b4 in eval /home/jakub/Desktop/SO/shell_own/shell.c:243
+    #8 0x55fcdff96941 in main /home/jakub/Desktop/SO/shell_own/shell.c:311
+    #9 0x7fe9f8772d8f in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #10 0x7fe9f8772e3f in __libc_start_main_impl ../csu/libc-start.c:392
+    #11 0x55fcdff959a4 in _start (/home/jakub/Desktop/SO/shell_own/shell+0x49a4)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /home/jakub/Desktop/SO/shell_own/jobs.c:50 in sigchld_handler
+==54929==ABORTING
+exit
+
+>>> Test: "TestShellWithSyscalls.test_quit"
+[54931:54931] tcsetpgrp(3, 54931) = 0
+# quit
+exit
+
+>>> Test: "TestShellWithSyscalls.test_sigint"
+[54933:54933] tcsetpgrp(3, 54933) = 0
+# cat
+[54933:54933] fork() = 54934
+[54934:54934] setpgid(0, 0) = 0
+[54934:54934] execve("/usr/bin/cat", 0x6080000000a0, 0x7ffc0b4d8f48)
+[54933:54933] kill(-54934, SIGCONT) = 0
+[54933:54933] tcsetpgrp(3, 54934) = 0
+TEST: expected "\[(\d+):(\d+)\] waitpid\(([^)]*)\)([^]*)
+"
+exit
+
+>>> Test: "TestShellWithSyscalls.test_sigtstp"
+[54948:54948] tcsetpgrp(3, 54948) = 0
+# cat
+[54948:54948] fork() = 54950
+[54948:54948] kill(-54950, SIGCONT) = -1
+[54948:54948] tcsetpgrp(3, 54950) = 0
+[54950:54950] setpgid(0, 0) = 0
+[54950:54950] execve("/usr/bin/cat", 0x6080000000a0, 0x7ffc4acc33a8)
+[54948:54948] waitpid(...) -> {}
+[54948:54948] tcsetpgrp(3, 54948) = 0
+# TEST: expected "\[(\d+):(\d+)\] waitpid\(([^)]*)\)([^]*)
+"
+exit
+
+>>> Test: "TestShellWithSyscalls.test_termattr_1"
+[54966:54966] tcsetpgrp(3, 54966) = 0
+# stty -a
+[54966:54966] fork() = 54969
+[54966:54966] kill(-54969, SIGCONT) = -1
+[54966:54966] tcsetpgrp(3, 54969) = 0
+[54969:54969] setpgid(0, 0) = 0
+[54969:54969] execve("/usr/bin/stty", 0x6080000000a0, 0x7ffced6299d8)
+speed 38400 baud; rows 24; columns 80; line = 0;
+intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>;
+eol2 = <undef>; swtch = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R;
+werase = ^W; lnext = ^V; discard = ^O; min = 1; time = 0;
+-parenb -parodd -cmspar cs8 -hupcl -cstopb cread -clocal -crtscts
+-ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff
+-iuclc -ixany -imaxbel -iutf8
+opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0
+isig icanon iexten -echo echoe echok -echonl -noflsh -xcase -tostop -echoprt
+echoctl echoke -flusho -extproc
+[54966:54966] waitpid(...) -> {pid=54969, status=0}
+[54966:54966] waitpid(...) -> {}
+[54966:54966] tcsetpgrp(3, 54966) = 0
+# more shell.c
+[54966:54966] fork() = 54972
+[54966:54966] kill(-54972, SIGCONT) = -1
+[54966:54966] tcsetpgrp(3, 54972) = 0
+[54972:54972] setpgid(0, 0) = 0
+[54972:54972] execve("/usr/bin/more", 0x608000000120, 0x7ffced6299d8)
+q[54972:54972] tcsetattr(2, 0, 0x7fff390679b0) = 0
+#ifdef READLINE
+#include <readline/readline.h>
+#include <readline/history.h>
+#endif
+
+#define DEBUG 0
+#include "shell.h"
+
+sigset_t sigchld_mask;
+
+static void sigint_handler(int sig) {
+  /* No-op handler, we just need break read() call with EINTR. */
+  (void)sig;
+}
+
+/* Rewrite closed file descriptors to -1,
+ * to make sure we don't attempt do close them twice. */
+static void MaybeClose(int *fdp) {
+  if (*fdp < 0)
+    return;
+  Close(*fdp);
+  *fdp = -1;
+}
+[7m--More--(6%)[27m[54972:54972] tcsetattr(2, 0, 0x7fff390679ec) = 0
+[K[54966:54966] waitpid(...) -> {pid=54972, status=0}
+[54966:54966] waitpid(...) -> {}
+[54966:54966] tcsetpgrp(3, 54966) = 0
+# stty -a
+[54966:54966] fork() = 54977
+[54966:54966] kill(-54977, SIGCONT) = -1
+[54966:54966] tcsetpgrp(3, 54977) = 0
+[54977:54977] setpgid(0, 0) = 0
+[54977:54977] execve("/usr/bin/stty", 0x6080000001a0, 0x7ffced6299d8)
+speed 38400 baud; rows 24; columns 80; line = 0;
+intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>;
+eol2 = <undef>; swtch = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R;
+werase = ^W; lnext = ^V; discard = ^O; min = 1; time = 0;
+-parenb -parodd -cmspar cs8 -hupcl -cstopb cread -clocal -crtscts
+-ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff
+-iuclc -ixany -imaxbel -iutf8
+opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0
+isig icanon iexten -echo echoe echok -echonl -noflsh -xcase -tostop -echoprt
+echoctl echoke -flusho -extproc
+[54966:54966] waitpid(...) -> {pid=54977, status=0}
+[54966:54966] waitpid(...) -> {}
+[54966:54966] tcsetpgrp(3, 54966) = 0
+# exit
+
+>>> Test: "TestShellWithSyscalls.test_termattr_2"
+[54979:54979] tcsetpgrp(3, 54979) = 0
+# stty -a
+[54979:54979] fork() = 54980
+[54980:54980] setpgid(0, 0) = 0
+[54980:54980] execve("/usr/bin/stty", 0x6080000000a0, 0x7ffda3480348)
+[54979:54979] kill(-54980, SIGCONT) = 0
+[54979:54979] tcsetpgrp(3, 54980) = 0
+speed 38400 baud; rows 24; columns 80; line = 0;
+intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>;
+eol2 = <undef>; swtch = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R;
+werase = ^W; lnext = ^V; discard = ^O; min = 1; time = 0;
+-parenb -parodd -cmspar cs8 -hupcl -cstopb cread -clocal -crtscts
+-ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff
+-iuclc -ixany -imaxbel -iutf8
+opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0
+isig icanon iexten -echo echoe echok -echonl -noflsh -xcase -tostop -echoprt
+echoctl echoke -flusho -extproc
+[54979:54979] waitpid(...) -> {pid=54980, status=0}
+[54979:54979] waitpid(...) -> {}
+[54979:54979] tcsetpgrp(3, 54979) = 0
+# more shell.c
+[54979:54979] fork() = 54982
+[54982:54982] setpgid(0, 0) = 0
+[54982:54982] execve("/usr/bin/more", 0x608000000120, 0x7ffda3480348)
+[54979:54979] kill(-54982, SIGCONT) = 0
+[54982:54982] tcsetattr(2, 0, 0x7fff617ae2e0) = 0
+[54979:54979] tcsetpgrp(3, 54982) = 0
+#ifdef READLINE
+#include <readline/readline.h>
+#include <readline/history.h>
+#endif
+
+#define DEBUG 0
+#include "shell.h"
+
+sigset_t sigchld_mask;
+
+static void sigint_handler(int sig) {
+  /* No-op handler, we just need break read() call with EINTR. */
+  (void)sig;
+}
+
+/* Rewrite closed file descriptors to -1,
+ * to make sure we don't attempt do close them twice. */
+static void MaybeClose(int *fdp) {
+  if (*fdp < 0)
+    return;
+  Close(*fdp);
+  *fdp = -1;
+}
+[7m--More--(6%)[27m[54982:54982] tcsetattr(2, 0, 0x7fff617ae31c) = 0
+[54979:54979] waitpid(...) -> {}
+[54979:54979] tcsetpgrp(3, 54979) = 0
+# TEST: expected "\[(\d+):(\d+)\] waitpid\(([^)]*)\)([^]*)
+"
+exit
+
+>>> Test: "TestShellWithSyscalls.test_terminate_tstped"
+[54995:54995] tcsetpgrp(3, 54995) = 0
+# cat
+[54995:54995] fork() = 54998
+[54998:54998] setpgid(0, 0) = 0
+[54998:54998] execve("/usr/bin/cat", 0x6080000000a0, 0x7ffd58c53e08)
+/usr/bin/cat: -: Input/output error
+[54998:54998] close(0) = 0
+[54995:54995] kill(-54998, SIGCONT) = 0
+[54995:54995] tcsetpgrp(3, 54998) = 0
+[54995:54995] waitpid(...) -> {pid=54998, status=1}
+[54995:54995] waitpid(...) -> {}
+[54995:54995] tcsetpgrp(3, 54995) = 0
+# TEST: expected "\[(\d+):(\d+)\] waitpid\(([^)]*)\)([^]*)
+"
+exit
+
+>>> Test: "TestShellWithSyscalls.test_terminate_ttined"
+[55019:55019] tcsetpgrp(3, 55019) = 0
+# cat &
+[55019:55019] fork() = 55022
+[55022:55022] setpgid(0, 0) = 0
+[55022:55022] execve("/usr/bin/cat", 0x6080000000a0, 0x7ffd54c8bc68)
+# /usr/bin/cat: -: Input/output error
+[55022:55022] close(0) = 0
+[55019:55019] waitpid(...) -> {pid=55022, status=1}
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+[1m[31m==55019==ERROR: AddressSanitizer: SEGV on unknown address (pc 0x557c930aa854 bp 0x7ffd54c8aa60 sp 0x7ffd54c8aa50 T0)
+[1m[0m==55019==The signal is caused by a READ memory access.
+==55019==Hint: this fault was caused by a dereference of a high value address (see register values below).  Dissassemble the provided pc to learn which register was used.
+[55019:55019] open("/proc/self/exe", 524288, -1798874240) = 4
+[55019:55019] open("/usr/lib/debug/.build-id/59/f47cdfde4fd06e548ffacefd3fe3abd8fa2c6f.debug", 524288, -1798874240) = -1
+[55019:55019] close(4) = 0
+[55019:55019] open("linux-vdso.so.1", 524288, -1798874240) = -1
+[55019:55019] open("/lib/x86_64-linux-gnu/libasan.so.6", 524288, -1798874240) = 4
+[55019:55019] open("/usr/lib/debug/.build-id/92/b9e20d2f642be35fd497f59e00687bc8a672f0.debug", 524288, -1798874240) = -1
+[55019:55019] close(4) = 0
+[55019:55019] open("./trace.so", 524288, -1798874240) = 4
+[55019:55019] open("/usr/lib/debug/.build-id/1f/8889e1b143debc656f483fdaa7a917a3ca1b66.debug", 524288, -1798874240) = -1
+[55019:55019] close(4) = 0
+[55019:55019] open("/lib/x86_64-linux-gnu/libreadline.so.8", 524288, -1798874240) = 4
+[55019:55019] open("/usr/lib/debug/.build-id/c5/4682f27b37bcc6d4692c9ebc8f6b458727cf73.debug", 524288, -1798874240) = -1
+[55019:55019] open("/lib/x86_64-linux-gnu/4682f27b37bcc6d4692c9ebc8f6b458727cf73.debug", 524288, -1798874240) = -1
+[55019:55019] open("/lib/x86_64-linux-gnu/.debug/4682f27b37bcc6d4692c9ebc8f6b458727cf73.debug", 524288, -1798874240) = -1
+[55019:55019] open("/usr/lib/debug//lib/x86_64-linux-gnu/4682f27b37bcc6d4692c9ebc8f6b458727cf73.debug", 524288, -1798874240) = -1
+[55019:55019] close(4) = 0
+[55019:55019] open("/lib/x86_64-linux-gnu/libc.so.6", 524288, -1798874240) = 4
+[55019:55019] open("/usr/lib/debug/.build-id/69/389d485a9793dbe873f0ea2c93e02efaa9aa3d.debug", 524288, -1798874240) = 5
+[55019:55019] close(5) = 0
+[55019:55019] close(4) = 0
+[55019:55019] open("/lib/x86_64-linux-gnu/libm.so.6", 524288, -1798874240) = 4
+[55019:55019] open("/usr/lib/debug/.build-id/27/e82301dba6c3f644404d504e1bb1c97894b433.debug", 524288, -1798874240) = 5
+[55019:55019] close(5) = 0
+[55019:55019] close(4) = 0
+[55019:55019] open("/lib/x86_64-linux-gnu/libgcc_s.so.1", 524288, -1798874240) = 4
+[55019:55019] open("/usr/lib/debug/.build-id/09/c4935b79388431a1248f6a98e00d7dc81b8513.debug", 524288, -1798874240) = -1
+[55019:55019] open("/lib/x86_64-linux-gnu/c4935b79388431a1248f6a98e00d7dc81b8513.debug", 524288, -1798874240) = -1
+[55019:55019] open("/lib/x86_64-linux-gnu/.debug/c4935b79388431a1248f6a98e00d7dc81b8513.debug", 524288, -1798874240) = -1
+[55019:55019] open("/usr/lib/debug//lib/x86_64-linux-gnu/c4935b79388431a1248f6a98e00d7dc81b8513.debug", 524288, -1798874240) = -1
+[55019:55019] close(4) = 0
+[55019:55019] open("/lib/x86_64-linux-gnu/libtinfo.so.6", 524288, -1798874240) = 4
+[55019:55019] open("/usr/lib/debug/.build-id/5b/c463a93df92725301f9399eea90bb6fc987b34.debug", 524288, -1798874240) = -1
+[55019:55019] open("/lib/x86_64-linux-gnu/c463a93df92725301f9399eea90bb6fc987b34.debug", 524288, -1798874240) = -1
+[55019:55019] open("/lib/x86_64-linux-gnu/.debug/c463a93df92725301f9399eea90bb6fc987b34.debug", 524288, -1798874240) = -1
+[55019:55019] open("/usr/lib/debug//lib/x86_64-linux-gnu/c463a93df92725301f9399eea90bb6fc987b34.debug", 524288, -1798874240) = -1
+[55019:55019] open("/lib/x86_64-linux-gnu//usr/lib/debug/.dwz/x86_64-linux-gnu/libtinfo6.debug", 524288, -1798874240) = -1
+[55019:55019] open("/lib/x86_64-linux-gnu/.debug//usr/lib/debug/.dwz/x86_64-linux-gnu/libtinfo6.debug", 524288, -1798874240) = -1
+[55019:55019] open("/usr/lib/debug//lib/x86_64-linux-gnu//usr/lib/debug/.dwz/x86_64-linux-gnu/libtinfo6.debug", 524288, -1798874240) = -1
+[55019:55019] close(4) = 0
+[55019:55019] open("/lib64/ld-linux-x86-64.so.2", 524288, -1798874240) = 4
+[55019:55019] open("/usr/lib/debug/.build-id/61/ef896a699bb1c2e4e231642b2e1688b2f1a61e.debug", 524288, -1798874240) = 5
+[55019:55019] close(5) = 0
+[55019:55019] close(4) = 0
+    #0 0x557c930aa854 in sigchld_handler /home/jakub/Desktop/SO/shell_own/jobs.c:50
+    #1 0x7f1494a3351f  (/lib/x86_64-linux-gnu/libc.so.6+0x4251f)
+    #2 0x7f1494b0598f in __GI___libc_read ../sysdeps/unix/sysv/linux/read.c:26
+    #3 0x7f1494cc6509 in __interceptor_read ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:1027
+    #4 0x557c930a8619 in read /usr/include/x86_64-linux-gnu/bits/unistd.h:38
+    #5 0x557c930a8619 in readline /home/jakub/Desktop/SO/shell_own/shell.c:258
+    #6 0x557c930a8910 in main /home/jakub/Desktop/SO/shell_own/shell.c:302
+    #7 0x7f1494a1ad8f in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #8 0x7f1494a1ae3f in __libc_start_main_impl ../csu/libc-start.c:392
+    #9 0x557c930a79a4 in _start (/home/jakub/Desktop/SO/shell_own/shell+0x49a4)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /home/jakub/Desktop/SO/shell_own/jobs.c:50 in sigchld_handler
+==55019==ABORTING
+exit
+

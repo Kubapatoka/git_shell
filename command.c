@@ -113,14 +113,27 @@ noreturn void external_command(char **argv) {
   if (!index(argv[0], '/') && path) {
     /* TODO: For all paths in PATH construct an absolute path and execve it. */
 #ifdef STUDENT
-	const int d1 = strlen(path);
-	const int d2 = strlen(argv[0]);
-	char* full_path = malloc((d1+d2+2)*sizeof(char));
-	strcpy(full_path, path);
-	strncat(full_path, "/");
-	strncat(full_path, argv[0]);
 
-	execve(full_path, argv, environ); 
+    char *path_dup = strdup(path);
+    char *save = NULL;
+    char *part_path = strtok_r(path_dup, ":", &save);
+
+    char *name = argv[0];
+
+    while(1)
+    {
+      if(!part_path) break;
+
+      char *full_path = (char*)malloc( strlen(name) + strlen(part_path) + 2);
+
+      strcpy(full_path, part_path);
+      strcat(full_path, "/");
+      strcat(full_path, name);
+
+      argv[0] = full_path;
+      execve(full_path, argv, environ);
+      part_path = strtok_r(NULL, ":", &save);
+    }
 
 #endif /* !STUDENT */
   } else {

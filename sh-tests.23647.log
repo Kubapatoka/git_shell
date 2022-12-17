@@ -1,0 +1,207 @@
+>>> Test: "TestShellSimple.test_exitcode_1"
+# true &
+[1] running 'true'
+# jobs
+[1] exited 'true', status=0
+# false &
+[1] running 'false'
+[1] exited 'false', status=1
+# jobs
+exit
+
+>>> Test: "TestShellSimple.test_fd_leaks"
+# ls -l /proc/self/fd
+total 0
+lrwx------ 1 jakub jakub 64 Dec 17 06:52 0 -> /dev/pts/5
+lrwx------ 1 jakub jakub 64 Dec 17 06:52 1 -> /dev/pts/5
+lrwx------ 1 jakub jakub 64 Dec 17 06:52 2 -> /dev/pts/5
+lr-x------ 1 jakub jakub 64 Dec 17 06:52 3 -> /proc/23673/fd
+Tcsetpgrp error: No such process
+exit
+
+>>> Test: "TestShellSimple.test_kill_at_quit"
+# sleep 1000 &
+[1] running 'sleep 1000'
+# sleep 2000 &
+[2] running 'sleep 2000'
+# jobs
+[1] running 'sleep 1000'
+[2] running 'sleep 2000'
+# 
+[1] killed 'sleep 1000' by signal 15
+[2] killed 'sleep 2000' by signal 15
+exit
+
+>>> Test: "TestShellSimple.test_kill_jobs"
+# sleep 1000 &
+[1] running 'sleep 1000'
+# sleep 2000 &
+[2] running 'sleep 2000'
+# jobs
+[1] running 'sleep 1000'
+[2] running 'sleep 2000'
+# kill %2
+jobs
+# [1] running 'sleep 1000'
+[2] killed 'sleep 2000' by signal 15
+# kill %1
+jobs
+# [1] killed 'sleep 1000' by signal 15
+# exit
+
+>>> Test: "TestShellSimple.test_kill_suspended"
+# cat &
+[1] running 'cat'
+# jobs
+[1] suspended 'cat'
+# pkill -9 cat
+pkill: killing pid 20548 failed: Operation not permitted
+TEST: expected "killed 'cat' by signal 9"
+exit
+
+>>> Test: "TestShellSimple.test_pipeline_1"
+# grep LIST include/queue.h | wc -l
+# exit
+
+>>> Test: "TestShellSimple.test_pipeline_2"
+# cat include/queue.h | cat | grep LIST | cat | wc -l
+# exit
+
+>>> Test: "TestShellSimple.test_pipeline_3"
+# cat < include/queue.h | grep LIST | wc -l > /tmp/tmpj3r1lo0g
+# exit
+
+>>> Test: "TestShellSimple.test_redir_1"
+# wc -l include/queue.h >/tmp/tmpckvgqgdy
+Tcsetpgrp error: No such process
+exit
+
+>>> Test: "TestShellSimple.test_redir_2"
+# wc -l /tmp/tmp11sw8kvh >/tmp/tmpdbtr45li
+Tcsetpgrp error: No such process
+exit
+
+>>> Test: "TestShellSimple.test_resume_suspended"
+# cat &
+[1] running 'cat'
+# jobs
+[1] suspended 'cat'
+# fg
+TEST: expected "continue 'cat'"
+exit
+
+>>> Test: "TestShellWithSyscalls.test_quit"
+[23725:23725] tcsetpgrp(3, 23725) = 0
+# quit
+exit
+
+>>> Test: "TestShellWithSyscalls.test_sigint"
+[23733:23733] tcsetpgrp(3, 23733) = 0
+# cat
+[23733:23733] fork() = 23735
+[23735:23735] setpgid(0, 0) = 0
+[23735:23735] execve("/usr/bin/cat", 0x6080000000a0, 0x7ffd6efbd578)
+[23733:23733] kill(-23735, SIGCONT) = 0
+[23733:23733] waitpid(...) -> {pid=23735, status=SIGTTIN}
+[23733:23733] waitpid(...) -> {}
+[23733:23733] tcsetpgrp(3, 23735) = 0
+[23733:23733] tcsetattr(3, 1, 0x608000000030) = 0
+TEST: expected "\[(\d+):(\d+)\] waitpid\(([^)]*)\)([^]*)
+"
+exit
+
+>>> Test: "TestShellWithSyscalls.test_sigtstp"
+[23741:23741] tcsetpgrp(3, 23741) = 0
+# cat
+[23741:23741] fork() = 23743
+[23743:23743] setpgid(0, 0) = 0
+[23743:23743] execve("/usr/bin/cat", 0x6080000000a0, 0x7ffd7e406c38)
+[23741:23741] kill(-23743, SIGCONT) = 0
+[23741:23741] waitpid(...) -> {pid=23743, status=SIGTTIN}
+[23741:23741] waitpid(...) -> {}
+[23741:23741] tcsetpgrp(3, 23743) = 0
+[23741:23741] tcsetattr(3, 1, 0x608000000030) = 0
+TEST: expected "\[(\d+):(\d+)\] waitpid\(([^)]*)\)([^]*)
+"
+exit
+
+>>> Test: "TestShellWithSyscalls.test_termattr_1"
+[23766:23766] tcsetpgrp(3, 23766) = 0
+# stty -a
+[23766:23766] fork() = 23768
+[23766:23766] kill(-23768, SIGCONT) = -1
+[23768:23768] setpgid(0, 0) = 0
+[23768:23768] execve("/usr/bin/stty", 0x6080000000a0, 0x7ffe355694e8)
+speed 38400 baud; rows 24; columns 80; line = 0;
+intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>;
+eol2 = <undef>; swtch = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R;
+werase = ^W; lnext = ^V; discard = ^O; min = 1; time = 0;
+-parenb -parodd -cmspar cs8 -hupcl -cstopb cread -clocal -crtscts
+-ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff
+-iuclc -ixany -imaxbel -iutf8
+opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0
+isig icanon iexten -echo echoe echok -echonl -noflsh -xcase -tostop -echoprt
+echoctl echoke -flusho -extproc
+[23766:23766] waitpid(...) -> {pid=23768, status=0}
+[23766:23766] waitpid(...) -> {}
+[23766:23766] tcsetpgrp(3, 23768) = -1
+Tcsetpgrp error: No such process
+exit
+
+>>> Test: "TestShellWithSyscalls.test_termattr_2"
+[23772:23772] tcsetpgrp(3, 23772) = 0
+# stty -a
+[23772:23772] fork() = 23777
+[23772:23772] kill(-23777, SIGCONT) = -1
+[23777:23777] setpgid(0, 0) = 0
+[23777:23777] execve("/usr/bin/stty", 0x6080000000a0, 0x7ffc33fd69c8)
+speed 38400 baud; rows 24; columns 80; line = 0;
+intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>;
+eol2 = <undef>; swtch = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R;
+werase = ^W; lnext = ^V; discard = ^O; min = 1; time = 0;
+-parenb -parodd -cmspar cs8 -hupcl -cstopb cread -clocal -crtscts
+-ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff
+-iuclc -ixany -imaxbel -iutf8
+opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0
+isig icanon iexten -echo echoe echok -echonl -noflsh -xcase -tostop -echoprt
+echoctl echoke -flusho -extproc
+[23772:23772] waitpid(...) -> {pid=23777, status=0}
+[23772:23772] waitpid(...) -> {}
+[23772:23772] tcsetpgrp(3, 23777) = -1
+Tcsetpgrp error: No such process
+exit
+
+>>> Test: "TestShellWithSyscalls.test_terminate_tstped"
+[23780:23780] tcsetpgrp(3, 23780) = 0
+# cat
+[23780:23780] fork() = 23781
+[23780:23780] kill(-23781, SIGCONT) = -1
+[23781:23781] setpgid(0, 0) = 0
+[23781:23781] execve("/usr/bin/cat", 0x6080000000a0, 0x7ffc79ce3818)
+[23780:23780] waitpid(...) -> {pid=23781, status=SIGTTIN}
+[23780:23780] waitpid(...) -> {}
+[23780:23780] tcsetpgrp(3, 23781) = 0
+[23780:23780] tcsetattr(3, 1, 0x608000000030) = 0
+TEST: expected "\[(\d+):(\d+)\] waitpid\(([^)]*)\)([^]*)
+"
+exit
+
+>>> Test: "TestShellWithSyscalls.test_terminate_ttined"
+[23799:23799] tcsetpgrp(3, 23799) = 0
+# cat &
+[23799:23799] fork() = 23801
+[23801:23801] setpgid(0, 0) = 0
+[23801:23801] execve("/usr/bin/cat", 0x6080000000a0, 0x7ffd093881e8)
+[1] running 'cat'
+[23799:23799] waitpid(...) -> {pid=23801, status=SIGTTIN}
+[23799:23799] waitpid(...) -> {}
+# kill %1
+[23799:23799] kill(-23801, SIGCONT) = 0
+[23799:23799] kill(-23801, SIGTERM) = 0
+[23799:23799] waitpid(...) -> {}
+# [23799:23799] waitpid(...) -> {pid=23801, status=SIGTERM}
+[23799:23799] waitpid(...) -> {}
+jobs
+[1] killed 'cat' by signal 15
+# exit
+

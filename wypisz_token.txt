@@ -1,0 +1,21 @@
+int i = 0;
+  while(token[i] != NULL)
+  {
+  	char* a = token[i];
+  	
+  	if(token[i] == T_NULL) printf("T_NULL");
+  	else if(token[i] == T_OR) printf("T_OR");
+  	else if(token[i] == T_PIPE) printf("T_PIPE");
+  	else if(token[i] == T_AND) printf("T_AND");
+  	else if(token[i] == T_BGJOB) printf("T_BGJOB");
+  	else if(token[i] == T_INPUT) printf("T_INPUT");
+  	else if(token[i] == T_OUTPUT) printf("T_OUTPUT");
+  	else if(token[i] == T_COLON) printf("T_COLON");
+  	else if(token[i] == T_APPEND) printf("T_APPEND");
+  	else if(token[i] == T_BANG) printf("T_BANG");
+  	else while(*a != '\0'){ printf("%c", *a); a++;} 
+	
+	printf("\n"); 
+	
+	i++;	
+  }

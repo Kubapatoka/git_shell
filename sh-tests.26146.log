@@ -1,0 +1,591 @@
+>>> Test: "TestShellSimple.test_exitcode_1"
+# true &
+[1] running 'true'
+# jobs
+[1] exited 'true', status=0
+# false &
+[1] running 'false'
+jobs
+# [1] exited 'false', status=1
+# exit
+
+>>> Test: "TestShellSimple.test_fd_leaks"
+# ls -l /proc/self/fd
+total 0
+lrwx------ 1 jakub jakub 64 Dec 17 07:55 0 -> /dev/pts/5
+lrwx------ 1 jakub jakub 64 Dec 17 07:55 1 -> /dev/pts/5
+lrwx------ 1 jakub jakub 64 Dec 17 07:55 2 -> /dev/pts/5
+lr-x------ 1 jakub jakub 64 Dec 17 07:55 3 -> /proc/26169/fd
+# ls -l /proc/self/fd | cat
+# exit
+
+>>> Test: "TestShellSimple.test_kill_at_quit"
+# sleep 1000 &
+[1] running 'sleep 1000'
+# sleep 2000 &
+[2] running 'sleep 2000'
+# jobs
+[1] running 'sleep 1000'
+[2] running 'sleep 2000'
+# 
+[1] killed 'sleep 1000' by signal 15
+[2] killed 'sleep 2000' by signal 15
+exit
+
+>>> Test: "TestShellSimple.test_kill_jobs"
+# sleep 1000 &
+[1] running 'sleep 1000'
+# sleep 2000 &
+[2] running 'sleep 2000'
+# jobs
+[1] running 'sleep 1000'
+[2] running 'sleep 2000'
+# kill %2
+jobs
+# [1] running 'sleep 1000'
+[2] killed 'sleep 2000' by signal 15
+# kill %1
+jobs
+# [1] killed 'sleep 1000' by signal 15
+# exit
+
+>>> Test: "TestShellSimple.test_kill_suspended"
+# cat &
+[1] running 'cat'
+# jobs
+[1] suspended 'cat'
+# pkill -9 cat
+pkill: killing pid 25453 failed: Operation not permitted
+pkill: killing pid 26029 failed: Operation not permitted
+[1] killed 'cat' by signal 9
+# exit
+
+>>> Test: "TestShellSimple.test_pipeline_1"
+# grep LIST include/queue.h | wc -l
+# exit
+
+>>> Test: "TestShellSimple.test_pipeline_2"
+# cat include/queue.h | cat | grep LIST | cat | wc -l
+# exit
+
+>>> Test: "TestShellSimple.test_pipeline_3"
+# cat < include/queue.h | grep LIST | wc -l > /tmp/tmp1dr2wyhp
+# exit
+
+>>> Test: "TestShellSimple.test_redir_1"
+# wc -l include/queue.h >/tmp/tmpajz3box1
+# wc -l < include/queue.h
+587
+# wc -l < include/queue.h >/tmp/tmpunkwugyw
+# exit
+
+>>> Test: "TestShellSimple.test_redir_2"
+# wc -l /tmp/tmpt8yxb4ub >/tmp/tmpv_776ea4
+# exit
+
+>>> Test: "TestShellSimple.test_resume_suspended"
+# cat &
+[1] running 'cat'
+# jobs
+[1] suspended 'cat'
+# fg
+TEST: expected "continue 'cat'"
+exit
+
+>>> Test: "TestShellWithSyscalls.test_quit"
+[26209:26209] tcsetpgrp(3, 26209) = 0
+# quit
+exit
+
+>>> Test: "TestShellWithSyscalls.test_sigint"
+[26217:26217] tcsetpgrp(3, 26217) = 0
+# cat
+[26217:26217] fork() = 26219
+[26219:26219] setpgid(0, 0) = 0
+[26217:26217] kill(-26219, SIGCONT) = 0
+[26219:26219] execve("/usr/bin/cat", 0x6080000000a0, 0x7ffdb8bffc48)
+[26217:26217] tcsetpgrp(3, 26219) = 0
+[26217:26217] tcsetattr(3, 1, 0x608000000030) = 0
+[26217:26217] waitpid(...) -> {pid=26219, status=SIGINT}
+[26217:26217] waitpid(...) -> {}
+[26217:26217] tcsetattr(3, 1, 0x7ffdb8bff680) = 0
+[26217:26217] tcsetpgrp(3, 26217) = 0
+# exit
+
+>>> Test: "TestShellWithSyscalls.test_sigtstp"
+[26220:26220] tcsetpgrp(3, 26220) = 0
+# cat
+[26220:26220] fork() = 26221
+[26220:26220] kill(-26221, SIGCONT) = -1
+[26220:26220] tcsetpgrp(3, 26221) = 0
+[26220:26220] tcsetattr(3, 1, 0x608000000030) = 0
+[26221:26221] setpgid(0, 0) = 0
+[26221:26221] execve("/usr/bin/cat", 0x6080000000a0, 0x7ffd0a371ef8)
+[26220:26220] waitpid(...) -> {pid=26221, status=SIGTSTP}
+[26220:26220] waitpid(...) -> {}
+=================================================================
+fg 1
+[1m[31m==26220==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x608000000080 at pc 0x55c7ad6414fc bp 0x7ffd0a3718d0 sp 0x7ffd0a3718c0
+[1m[0m[1m[34mREAD of size 4 at 0x608000000080 thread T0[1m[0m
+[26220:26220] open("/proc/self/exe", 524288, 171377136) = 4
+[26220:26220] open("/usr/lib/debug/.build-id/3f/01c457163b67719aabf925cbaf6b99cdaf4013.debug", 524288, 171377136) = -1
+[26220:26220] close(4) = 0
+[26220:26220] open("linux-vdso.so.1", 524288, 171377136) = -1
+[26220:26220] open("/lib/x86_64-linux-gnu/libasan.so.6", 524288, 171377136) = 4
+[26220:26220] open("/usr/lib/debug/.build-id/92/b9e20d2f642be35fd497f59e00687bc8a672f0.debug", 524288, 171377136) = -1
+[26220:26220] close(4) = 0
+[26220:26220] open("./trace.so", 524288, 171377136) = 4
+[26220:26220] open("/usr/lib/debug/.build-id/1f/8889e1b143debc656f483fdaa7a917a3ca1b66.debug", 524288, 171377136) = -1
+[26220:26220] close(4) = 0
+[26220:26220] open("/lib/x86_64-linux-gnu/libreadline.so.8", 524288, 171377136) = 4
+[26220:26220] open("/usr/lib/debug/.build-id/c5/4682f27b37bcc6d4692c9ebc8f6b458727cf73.debug", 524288, 171377136) = -1
+[26220:26220] open("/lib/x86_64-linux-gnu/4682f27b37bcc6d4692c9ebc8f6b458727cf73.debug", 524288, 171377136) = -1
+[26220:26220] open("/lib/x86_64-linux-gnu/.debug/4682f27b37bcc6d4692c9ebc8f6b458727cf73.debug", 524288, 171377136) = -1
+[26220:26220] open("/usr/lib/debug//lib/x86_64-linux-gnu/4682f27b37bcc6d4692c9ebc8f6b458727cf73.debug", 524288, 171377136) = -1
+[26220:26220] close(4) = 0
+[26220:26220] open("/lib/x86_64-linux-gnu/libc.so.6", 524288, 171377136) = 4
+[26220:26220] open("/usr/lib/debug/.build-id/69/389d485a9793dbe873f0ea2c93e02efaa9aa3d.debug", 524288, 171377136) = 5
+[26220:26220] close(5) = 0
+[26220:26220] close(4) = 0
+[26220:26220] open("/lib/x86_64-linux-gnu/libm.so.6", 524288, 171377136) = 4
+[26220:26220] open("/usr/lib/debug/.build-id/27/e82301dba6c3f644404d504e1bb1c97894b433.debug", 524288, 171377136) = 5
+[26220:26220] close(5) = 0
+[26220:26220] close(4) = 0
+[26220:26220] open("/lib/x86_64-linux-gnu/libgcc_s.so.1", 524288, 171377136) = 4
+[26220:26220] open("/usr/lib/debug/.build-id/09/c4935b79388431a1248f6a98e00d7dc81b8513.debug", 524288, 171377136) = -1
+[26220:26220] open("/lib/x86_64-linux-gnu/c4935b79388431a1248f6a98e00d7dc81b8513.debug", 524288, 171377136) = -1
+[26220:26220] open("/lib/x86_64-linux-gnu/.debug/c4935b79388431a1248f6a98e00d7dc81b8513.debug", 524288, 171377136) = -1
+[26220:26220] open("/usr/lib/debug//lib/x86_64-linux-gnu/c4935b79388431a1248f6a98e00d7dc81b8513.debug", 524288, 171377136) = -1
+[26220:26220] close(4) = 0
+[26220:26220] open("/lib/x86_64-linux-gnu/libtinfo.so.6", 524288, 171377136) = 4
+[26220:26220] open("/usr/lib/debug/.build-id/5b/c463a93df92725301f9399eea90bb6fc987b34.debug", 524288, 171377136) = -1
+[26220:26220] open("/lib/x86_64-linux-gnu/c463a93df92725301f9399eea90bb6fc987b34.debug", 524288, 171377136) = -1
+[26220:26220] open("/lib/x86_64-linux-gnu/.debug/c463a93df92725301f9399eea90bb6fc987b34.debug", 524288, 171377136) = -1
+[26220:26220] open("/usr/lib/debug//lib/x86_64-linux-gnu/c463a93df92725301f9399eea90bb6fc987b34.debug", 524288, 171377136) = -1
+[26220:26220] open("/lib/x86_64-linux-gnu//usr/lib/debug/.dwz/x86_64-linux-gnu/libtinfo6.debug", 524288, 171377136) = -1
+[26220:26220] open("/lib/x86_64-linux-gnu/.debug//usr/lib/debug/.dwz/x86_64-linux-gnu/libtinfo6.debug", 524288, 171377136) = -1
+[26220:26220] open("/usr/lib/debug//lib/x86_64-linux-gnu//usr/lib/debug/.dwz/x86_64-linux-gnu/libtinfo6.debug", 524288, 171377136) = -1
+[26220:26220] close(4) = 0
+[26220:26220] open("/lib64/ld-linux-x86-64.so.2", 524288, 171377136) = 4
+[26220:26220] open("/usr/lib/debug/.build-id/61/ef896a699bb1c2e4e231642b2e1688b2f1a61e.debug", 524288, 171377136) = 5
+[26220:26220] close(5) = 0
+[26220:26220] close(4) = 0
+    #0 0x55c7ad6414fb in movejob /home/jakub/Desktop/SO/shell_own/jobs.c:129
+    #1 0x55c7ad6427e4 in monitorjob /home/jakub/Desktop/SO/shell_own/jobs.c:345
+    #2 0x55c7ad6428dd in resumejob /home/jakub/Desktop/SO/shell_own/jobs.c:214
+    #3 0x55c7ad63f288 in do_job /home/jakub/Desktop/SO/shell_own/shell.c:166
+    #4 0x55c7ad63f612 in eval /home/jakub/Desktop/SO/shell_own/shell.c:271
+    #5 0x55c7ad63f99f in main /home/jakub/Desktop/SO/shell_own/shell.c:339
+    #6 0x7fc1fcb36d8f in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #7 0x7fc1fcb36e3f in __libc_start_main_impl ../csu/libc-start.c:392
+    #8 0x55c7ad63e9e4 in _start (/home/jakub/Desktop/SO/shell_own/shell+0x49e4)
+
+[1m[32m0x608000000080 is located 0 bytes to the right of 96-byte region [0x608000000020,0x608000000080)
+[1m[0m[1m[35mallocated by thread T0 here:[1m[0m
+    #0 0x7fc1fce57a37 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x55c7ad642206 in initjobs /home/jakub/Desktop/SO/shell_own/jobs.c:384
+    #2 0x55c7ad644132  (/home/jakub/Desktop/SO/shell_own/shell+0xa132)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /home/jakub/Desktop/SO/shell_own/jobs.c:129 in movejob
+Shadow bytes around the buggy address:
+  0x0c107fff7fc0: [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m
+  0x0c107fff7fd0: [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m
+  0x0c107fff7fe0: [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m
+  0x0c107fff7ff0: [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m
+  0x0c107fff8000: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m
+=>0x0c107fff8010:[[1m[31mfa[1m[0m][1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[31mfa[1m[0m
+  0x0c107fff8020: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m
+  0x0c107fff8030: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m
+  0x0c107fff8040: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m
+  0x0c107fff8050: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m
+  0x0c107fff8060: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           [1m[0m00[1m[0m
+  Partially addressable: [1m[0m01[1m[0m [1m[0m02[1m[0m [1m[0m03[1m[0m [1m[0m04[1m[0m [1m[0m05[1m[0m [1m[0m06[1m[0m [1m[0m07[1m[0m 
+  Heap left redzone:       [1m[31mfa[1m[0m
+  Freed heap region:       [1m[35mfd[1m[0m
+  Stack left redzone:      [1m[31mf1[1m[0m
+  Stack mid redzone:       [1m[31mf2[1m[0m
+  Stack right redzone:     [1m[31mf3[1m[0m
+  Stack after return:      [1m[35mf5[1m[0m
+  Stack use after scope:   [1m[35mf8[1m[0m
+  Global redzone:          [1m[31mf9[1m[0m
+  Global init order:       [1m[36mf6[1m[0m
+  Poisoned by user:        [1m[34mf7[1m[0m
+  Container overflow:      [1m[34mfc[1m[0m
+  Array cookie:            [1m[31mac[1m[0m
+  Intra object redzone:    [1m[33mbb[1m[0m
+  ASan internal:           [1m[33mfe[1m[0m
+  Left alloca redzone:     [1m[34mca[1m[0m
+  Right alloca redzone:    [1m[34mcb[1m[0m
+  Shadow gap:              [1m[0mcc[1m[0m
+==26220==ABORTING
+exit
+
+>>> Test: "TestShellWithSyscalls.test_termattr_1"
+[26222:26222] tcsetpgrp(3, 26222) = 0
+# stty -a
+[26222:26222] fork() = 26223
+[26222:26222] kill(-26223, SIGCONT) = -1
+[26222:26222] tcsetpgrp(3, 26223) = 0
+[26222:26222] tcsetattr(3, 1, 0x608000000030) = 0
+[26223:26223] setpgid(0, 0) = 0
+[26223:26223] execve("/usr/bin/stty", 0x6080000000a0, 0x7ffdf38f5a18)
+speed 38400 baud; rows 24; columns 80; line = 0;
+intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>;
+eol2 = <undef>; swtch = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R;
+werase = ^W; lnext = ^V; discard = ^O; min = 1; time = 0;
+-parenb -parodd -cmspar cs8 -hupcl -cstopb cread -clocal -crtscts
+-ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff
+-iuclc -ixany -imaxbel -iutf8
+opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0
+isig icanon iexten -echo echoe echok -echonl -noflsh -xcase -tostop -echoprt
+echoctl echoke -flusho -extproc
+[26222:26222] waitpid(...) -> {pid=26223, status=0}
+[26222:26222] waitpid(...) -> {}
+[26222:26222] tcsetattr(3, 1, 0x7ffdf38f5450) = 0
+[26222:26222] tcsetpgrp(3, 26222) = 0
+# more shell.c
+[26222:26222] fork() = 26225
+[26222:26222] kill(-26225, SIGCONT) = -1
+[26222:26222] tcsetpgrp(3, 26225) = 0
+[26222:26222] tcsetattr(3, 1, 0x608000000030) = 0
+[26225:26225] setpgid(0, 0) = 0
+[26225:26225] execve("/usr/bin/more", 0x608000000120, 0x7ffdf38f5a18)
+q[26225:26225] tcsetattr(2, 0, 0x7ffe5287bdf0) = 0
+#ifdef READLINE
+#include <readline/readline.h>
+#include <readline/history.h>
+#endif
+
+#define DEBUG 0
+#include "shell.h"
+
+sigset_t sigchld_mask;
+
+static void sigint_handler(int sig) {
+  /* No-op handler, we just need break read() call with EINTR. */
+  (void)sig;
+}
+
+/* Rewrite closed file descriptors to -1,
+ * to make sure we don't attempt do close them twice. */
+static void MaybeClose(int *fdp) {
+  if (*fdp < 0)
+    return;
+  Close(*fdp);
+  *fdp = -1;
+}
+[7m--More--(5%)[27m[26225:26225] tcsetattr(2, 0, 0x7ffe5287be2c) = 0
+[K[26222:26222] waitpid(...) -> {pid=26225, status=0}
+[26222:26222] waitpid(...) -> {}
+[26222:26222] tcsetattr(3, 1, 0x7ffdf38f5450) = 0
+[26222:26222] tcsetpgrp(3, 26222) = 0
+# stty -a
+[26222:26222] fork() = 26226
+[26222:26222] kill(-26226, SIGCONT) = -1
+[26222:26222] tcsetpgrp(3, 26226) = 0
+[26222:26222] tcsetattr(3, 1, 0x608000000030) = 0
+[26226:26226] setpgid(0, 0) = 0
+[26226:26226] execve("/usr/bin/stty", 0x6080000001a0, 0x7ffdf38f5a18)
+speed 38400 baud; rows 24; columns 80; line = 0;
+intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>;
+eol2 = <undef>; swtch = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R;
+werase = ^W; lnext = ^V; discard = ^O; min = 1; time = 0;
+-parenb -parodd -cmspar cs8 -hupcl -cstopb cread -clocal -crtscts
+-ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff
+-iuclc -ixany -imaxbel -iutf8
+opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0
+isig icanon iexten -echo echoe echok -echonl -noflsh -xcase -tostop -echoprt
+echoctl echoke -flusho -extproc
+[26222:26222] waitpid(...) -> {pid=26226, status=0}
+[26222:26222] waitpid(...) -> {}
+[26222:26222] tcsetattr(3, 1, 0x7ffdf38f5450) = 0
+[26222:26222] tcsetpgrp(3, 26222) = 0
+# exit
+
+>>> Test: "TestShellWithSyscalls.test_termattr_2"
+[26228:26228] tcsetpgrp(3, 26228) = 0
+# stty -a
+[26228:26228] fork() = 26229
+[26228:26228] kill(-26229, SIGCONT) = -1
+[26228:26228] tcsetpgrp(3, 26229) = 0
+[26228:26228] tcsetattr(3, 1, 0x608000000030) = 0
+[26229:26229] setpgid(0, 0) = 0
+[26229:26229] execve("/usr/bin/stty", 0x6080000000a0, 0x7ffce93e9228)
+speed 38400 baud; rows 24; columns 80; line = 0;
+intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>;
+eol2 = <undef>; swtch = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R;
+werase = ^W; lnext = ^V; discard = ^O; min = 1; time = 0;
+-parenb -parodd -cmspar cs8 -hupcl -cstopb cread -clocal -crtscts
+-ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff
+-iuclc -ixany -imaxbel -iutf8
+opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0
+isig icanon iexten -echo echoe echok -echonl -noflsh -xcase -tostop -echoprt
+echoctl echoke -flusho -extproc
+[26228:26228] waitpid(...) -> {pid=26229, status=0}
+[26228:26228] waitpid(...) -> {}
+[26228:26228] tcsetattr(3, 1, 0x7ffce93e8c60) = 0
+[26228:26228] tcsetpgrp(3, 26228) = 0
+# more shell.c
+[26228:26228] fork() = 26231
+[26228:26228] kill(-26231, SIGCONT) = -1
+[26228:26228] tcsetpgrp(3, 26231) = 0
+[26228:26228] tcsetattr(3, 1, 0x608000000030) = 0
+[26231:26231] setpgid(0, 0) = 0
+[26231:26231] execve("/usr/bin/more", 0x608000000120, 0x7ffce93e9228)
+[26231:26231] tcsetattr(2, 0, 0x7ffee34e9820) = 0
+#ifdef READLINE
+#include <readline/readline.h>
+#include <readline/history.h>
+#endif
+
+#define DEBUG 0
+#include "shell.h"
+
+sigset_t sigchld_mask;
+
+static void sigint_handler(int sig) {
+  /* No-op handler, we just need break read() call with EINTR. */
+  (void)sig;
+}
+
+/* Rewrite closed file descriptors to -1,
+ * to make sure we don't attempt do close them twice. */
+static void MaybeClose(int *fdp) {
+  if (*fdp < 0)
+    return;
+  Close(*fdp);
+  *fdp = -1;
+}
+[7m--More--(5%)[27m[26231:26231] tcsetattr(2, 0, 0x7ffee34e985c) = 0
+[26228:26228] waitpid(...) -> {pid=26231, status=SIGSTOP}
+[26228:26228] waitpid(...) -> {}
+=================================================================
+kill %1
+[1m[31m==26228==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x608000000080 at pc 0x5634b85e44fc bp 0x7ffce93e8c00 sp 0x7ffce93e8bf0
+[1m[0m[1m[34mREAD of size 4 at 0x608000000080 thread T0[1m[0m
+[26228:26228] open("/proc/self/exe", 524288, -381782752) = 4
+[26228:26228] open("/usr/lib/debug/.build-id/3f/01c457163b67719aabf925cbaf6b99cdaf4013.debug", 524288, -381782752) = -1
+[26228:26228] close(4) = 0
+[26228:26228] open("linux-vdso.so.1", 524288, -381782752) = -1
+[26228:26228] open("/lib/x86_64-linux-gnu/libasan.so.6", 524288, -381782752) = 4
+[26228:26228] open("/usr/lib/debug/.build-id/92/b9e20d2f642be35fd497f59e00687bc8a672f0.debug", 524288, -381782752) = -1
+[26228:26228] close(4) = 0
+[26228:26228] open("./trace.so", 524288, -381782752) = 4
+[26228:26228] open("/usr/lib/debug/.build-id/1f/8889e1b143debc656f483fdaa7a917a3ca1b66.debug", 524288, -381782752) = -1
+[26228:26228] close(4) = 0
+[26228:26228] open("/lib/x86_64-linux-gnu/libreadline.so.8", 524288, -381782752) = 4
+[26228:26228] open("/usr/lib/debug/.build-id/c5/4682f27b37bcc6d4692c9ebc8f6b458727cf73.debug", 524288, -381782752) = -1
+[26228:26228] open("/lib/x86_64-linux-gnu/4682f27b37bcc6d4692c9ebc8f6b458727cf73.debug", 524288, -381782752) = -1
+[26228:26228] open("/lib/x86_64-linux-gnu/.debug/4682f27b37bcc6d4692c9ebc8f6b458727cf73.debug", 524288, -381782752) = -1
+[26228:26228] open("/usr/lib/debug//lib/x86_64-linux-gnu/4682f27b37bcc6d4692c9ebc8f6b458727cf73.debug", 524288, -381782752) = -1
+[26228:26228] close(4) = 0
+[26228:26228] open("/lib/x86_64-linux-gnu/libc.so.6", 524288, -381782752) = 4
+[26228:26228] open("/usr/lib/debug/.build-id/69/389d485a9793dbe873f0ea2c93e02efaa9aa3d.debug", 524288, -381782752) = 5
+[26228:26228] close(5) = 0
+[26228:26228] close(4) = 0
+[26228:26228] open("/lib/x86_64-linux-gnu/libm.so.6", 524288, -381782752) = 4
+[26228:26228] open("/usr/lib/debug/.build-id/27/e82301dba6c3f644404d504e1bb1c97894b433.debug", 524288, -381782752) = 5
+[26228:26228] close(5) = 0
+[26228:26228] close(4) = 0
+[26228:26228] open("/lib/x86_64-linux-gnu/libgcc_s.so.1", 524288, -381782752) = 4
+[26228:26228] open("/usr/lib/debug/.build-id/09/c4935b79388431a1248f6a98e00d7dc81b8513.debug", 524288, -381782752) = -1
+[26228:26228] open("/lib/x86_64-linux-gnu/c4935b79388431a1248f6a98e00d7dc81b8513.debug", 524288, -381782752) = -1
+[26228:26228] open("/lib/x86_64-linux-gnu/.debug/c4935b79388431a1248f6a98e00d7dc81b8513.debug", 524288, -381782752) = -1
+[26228:26228] open("/usr/lib/debug//lib/x86_64-linux-gnu/c4935b79388431a1248f6a98e00d7dc81b8513.debug", 524288, -381782752) = -1
+[26228:26228] close(4) = 0
+[26228:26228] open("/lib/x86_64-linux-gnu/libtinfo.so.6", 524288, -381782752) = 4
+[26228:26228] open("/usr/lib/debug/.build-id/5b/c463a93df92725301f9399eea90bb6fc987b34.debug", 524288, -381782752) = -1
+[26228:26228] open("/lib/x86_64-linux-gnu/c463a93df92725301f9399eea90bb6fc987b34.debug", 524288, -381782752) = -1
+[26228:26228] open("/lib/x86_64-linux-gnu/.debug/c463a93df92725301f9399eea90bb6fc987b34.debug", 524288, -381782752) = -1
+[26228:26228] open("/usr/lib/debug//lib/x86_64-linux-gnu/c463a93df92725301f9399eea90bb6fc987b34.debug", 524288, -381782752) = -1
+[26228:26228] open("/lib/x86_64-linux-gnu//usr/lib/debug/.dwz/x86_64-linux-gnu/libtinfo6.debug", 524288, -381782752) = -1
+[26228:26228] open("/lib/x86_64-linux-gnu/.debug//usr/lib/debug/.dwz/x86_64-linux-gnu/libtinfo6.debug", 524288, -381782752) = -1
+[26228:26228] open("/usr/lib/debug//lib/x86_64-linux-gnu//usr/lib/debug/.dwz/x86_64-linux-gnu/libtinfo6.debug", 524288, -381782752) = -1
+[26228:26228] close(4) = 0
+[26228:26228] open("/lib64/ld-linux-x86-64.so.2", 524288, -381782752) = 4
+[26228:26228] open("/usr/lib/debug/.build-id/61/ef896a699bb1c2e4e231642b2e1688b2f1a61e.debug", 524288, -381782752) = 5
+[26228:26228] close(5) = 0
+[26228:26228] close(4) = 0
+    #0 0x5634b85e44fb in movejob /home/jakub/Desktop/SO/shell_own/jobs.c:129
+    #1 0x5634b85e57e4 in monitorjob /home/jakub/Desktop/SO/shell_own/jobs.c:345
+    #2 0x5634b85e58dd in resumejob /home/jakub/Desktop/SO/shell_own/jobs.c:214
+    #3 0x5634b85e2288 in do_job /home/jakub/Desktop/SO/shell_own/shell.c:166
+    #4 0x5634b85e2612 in eval /home/jakub/Desktop/SO/shell_own/shell.c:271
+    #5 0x5634b85e299f in main /home/jakub/Desktop/SO/shell_own/shell.c:339
+    #6 0x7fde7a25fd8f in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #7 0x7fde7a25fe3f in __libc_start_main_impl ../csu/libc-start.c:392
+    #8 0x5634b85e19e4 in _start (/home/jakub/Desktop/SO/shell_own/shell+0x49e4)
+
+[1m[32m0x608000000080 is located 0 bytes to the right of 96-byte region [0x608000000020,0x608000000080)
+[1m[0m[1m[35mallocated by thread T0 here:[1m[0m
+    #0 0x7fde7a580a37 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x5634b85e5206 in initjobs /home/jakub/Desktop/SO/shell_own/jobs.c:384
+    #2 0x5634b85e7132  (/home/jakub/Desktop/SO/shell_own/shell+0xa132)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /home/jakub/Desktop/SO/shell_own/jobs.c:129 in movejob
+Shadow bytes around the buggy address:
+  0x0c107fff7fc0: [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m
+  0x0c107fff7fd0: [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m
+  0x0c107fff7fe0: [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m
+  0x0c107fff7ff0: [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m
+  0x0c107fff8000: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m
+=>0x0c107fff8010:[[1m[31mfa[1m[0m][1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[35mfd[1m[0m [1m[35mfd[1m[0m [1m[35mfd[1m[0m [1m[35mfd[1m[0m [1m[35mfd[1m[0m [1m[35mfd[1m[0m [1m[35mfd[1m[0m [1m[35mfd[1m[0m [1m[35mfd[1m[0m [1m[35mfd[1m[0m [1m[35mfd[1m[0m [1m[31mfa[1m[0m
+  0x0c107fff8020: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[31mfa[1m[0m
+  0x0c107fff8030: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m
+  0x0c107fff8040: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m
+  0x0c107fff8050: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m
+  0x0c107fff8060: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           [1m[0m00[1m[0m
+  Partially addressable: [1m[0m01[1m[0m [1m[0m02[1m[0m [1m[0m03[1m[0m [1m[0m04[1m[0m [1m[0m05[1m[0m [1m[0m06[1m[0m [1m[0m07[1m[0m 
+  Heap left redzone:       [1m[31mfa[1m[0m
+  Freed heap region:       [1m[35mfd[1m[0m
+  Stack left redzone:      [1m[31mf1[1m[0m
+  Stack mid redzone:       [1m[31mf2[1m[0m
+  Stack right redzone:     [1m[31mf3[1m[0m
+  Stack after return:      [1m[35mf5[1m[0m
+  Stack use after scope:   [1m[35mf8[1m[0m
+  Global redzone:          [1m[31mf9[1m[0m
+  Global init order:       [1m[36mf6[1m[0m
+  Poisoned by user:        [1m[34mf7[1m[0m
+  Container overflow:      [1m[34mfc[1m[0m
+  Array cookie:            [1m[31mac[1m[0m
+  Intra object redzone:    [1m[33mbb[1m[0m
+  ASan internal:           [1m[33mfe[1m[0m
+  Left alloca redzone:     [1m[34mca[1m[0m
+  Right alloca redzone:    [1m[34mcb[1m[0m
+  Shadow gap:              [1m[0mcc[1m[0m
+==26228==ABORTING
+exit
+
+>>> Test: "TestShellWithSyscalls.test_terminate_tstped"
+[26232:26232] tcsetpgrp(3, 26232) = 0
+# cat
+[26232:26232] fork() = 26233
+[26232:26232] kill(-26233, SIGCONT) = -1
+[26232:26232] tcsetpgrp(3, 26233) = 0
+[26232:26232] tcsetattr(3, 1, 0x608000000030) = 0
+[26233:26233] setpgid(0, 0) = 0
+[26233:26233] execve("/usr/bin/cat", 0x6080000000a0, 0x7ffcf19ef3b8)
+[26232:26232] waitpid(...) -> {pid=26233, status=SIGTSTP}
+[26232:26232] waitpid(...) -> {}
+=================================================================
+kill %1
+[1m[31m==26232==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x608000000080 at pc 0x5562e7f784fc bp 0x7ffcf19eed90 sp 0x7ffcf19eed80
+[1m[0m[1m[34mREAD of size 4 at 0x608000000080 thread T0[1m[0m
+[26232:26232] open("/proc/self/exe", 524288, -241248592) = 4
+[26232:26232] open("/usr/lib/debug/.build-id/3f/01c457163b67719aabf925cbaf6b99cdaf4013.debug", 524288, -241248592) = -1
+[26232:26232] close(4) = 0
+[26232:26232] open("linux-vdso.so.1", 524288, -241248592) = -1
+[26232:26232] open("/lib/x86_64-linux-gnu/libasan.so.6", 524288, -241248592) = 4
+[26232:26232] open("/usr/lib/debug/.build-id/92/b9e20d2f642be35fd497f59e00687bc8a672f0.debug", 524288, -241248592) = -1
+[26232:26232] close(4) = 0
+[26232:26232] open("./trace.so", 524288, -241248592) = 4
+[26232:26232] open("/usr/lib/debug/.build-id/1f/8889e1b143debc656f483fdaa7a917a3ca1b66.debug", 524288, -241248592) = -1
+[26232:26232] close(4) = 0
+[26232:26232] open("/lib/x86_64-linux-gnu/libreadline.so.8", 524288, -241248592) = 4
+[26232:26232] open("/usr/lib/debug/.build-id/c5/4682f27b37bcc6d4692c9ebc8f6b458727cf73.debug", 524288, -241248592) = -1
+[26232:26232] open("/lib/x86_64-linux-gnu/4682f27b37bcc6d4692c9ebc8f6b458727cf73.debug", 524288, -241248592) = -1
+[26232:26232] open("/lib/x86_64-linux-gnu/.debug/4682f27b37bcc6d4692c9ebc8f6b458727cf73.debug", 524288, -241248592) = -1
+[26232:26232] open("/usr/lib/debug//lib/x86_64-linux-gnu/4682f27b37bcc6d4692c9ebc8f6b458727cf73.debug", 524288, -241248592) = -1
+[26232:26232] close(4) = 0
+[26232:26232] open("/lib/x86_64-linux-gnu/libc.so.6", 524288, -241248592) = 4
+[26232:26232] open("/usr/lib/debug/.build-id/69/389d485a9793dbe873f0ea2c93e02efaa9aa3d.debug", 524288, -241248592) = 5
+[26232:26232] close(5) = 0
+[26232:26232] close(4) = 0
+[26232:26232] open("/lib/x86_64-linux-gnu/libm.so.6", 524288, -241248592) = 4
+[26232:26232] open("/usr/lib/debug/.build-id/27/e82301dba6c3f644404d504e1bb1c97894b433.debug", 524288, -241248592) = 5
+[26232:26232] close(5) = 0
+[26232:26232] close(4) = 0
+[26232:26232] open("/lib/x86_64-linux-gnu/libgcc_s.so.1", 524288, -241248592) = 4
+[26232:26232] open("/usr/lib/debug/.build-id/09/c4935b79388431a1248f6a98e00d7dc81b8513.debug", 524288, -241248592) = -1
+[26232:26232] open("/lib/x86_64-linux-gnu/c4935b79388431a1248f6a98e00d7dc81b8513.debug", 524288, -241248592) = -1
+[26232:26232] open("/lib/x86_64-linux-gnu/.debug/c4935b79388431a1248f6a98e00d7dc81b8513.debug", 524288, -241248592) = -1
+[26232:26232] open("/usr/lib/debug//lib/x86_64-linux-gnu/c4935b79388431a1248f6a98e00d7dc81b8513.debug", 524288, -241248592) = -1
+[26232:26232] close(4) = 0
+[26232:26232] open("/lib/x86_64-linux-gnu/libtinfo.so.6", 524288, -241248592) = 4
+[26232:26232] open("/usr/lib/debug/.build-id/5b/c463a93df92725301f9399eea90bb6fc987b34.debug", 524288, -241248592) = -1
+[26232:26232] open("/lib/x86_64-linux-gnu/c463a93df92725301f9399eea90bb6fc987b34.debug", 524288, -241248592) = -1
+[26232:26232] open("/lib/x86_64-linux-gnu/.debug/c463a93df92725301f9399eea90bb6fc987b34.debug", 524288, -241248592) = -1
+[26232:26232] open("/usr/lib/debug//lib/x86_64-linux-gnu/c463a93df92725301f9399eea90bb6fc987b34.debug", 524288, -241248592) = -1
+[26232:26232] open("/lib/x86_64-linux-gnu//usr/lib/debug/.dwz/x86_64-linux-gnu/libtinfo6.debug", 524288, -241248592) = -1
+[26232:26232] open("/lib/x86_64-linux-gnu/.debug//usr/lib/debug/.dwz/x86_64-linux-gnu/libtinfo6.debug", 524288, -241248592) = -1
+[26232:26232] open("/usr/lib/debug//lib/x86_64-linux-gnu//usr/lib/debug/.dwz/x86_64-linux-gnu/libtinfo6.debug", 524288, -241248592) = -1
+[26232:26232] close(4) = 0
+[26232:26232] open("/lib64/ld-linux-x86-64.so.2", 524288, -241248592) = 4
+[26232:26232] open("/usr/lib/debug/.build-id/61/ef896a699bb1c2e4e231642b2e1688b2f1a61e.debug", 524288, -241248592) = 5
+[26232:26232] close(5) = 0
+[26232:26232] close(4) = 0
+    #0 0x5562e7f784fb in movejob /home/jakub/Desktop/SO/shell_own/jobs.c:129
+    #1 0x5562e7f797e4 in monitorjob /home/jakub/Desktop/SO/shell_own/jobs.c:345
+    #2 0x5562e7f798dd in resumejob /home/jakub/Desktop/SO/shell_own/jobs.c:214
+    #3 0x5562e7f76288 in do_job /home/jakub/Desktop/SO/shell_own/shell.c:166
+    #4 0x5562e7f76612 in eval /home/jakub/Desktop/SO/shell_own/shell.c:271
+    #5 0x5562e7f7699f in main /home/jakub/Desktop/SO/shell_own/shell.c:339
+    #6 0x7f7679ff3d8f in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #7 0x7f7679ff3e3f in __libc_start_main_impl ../csu/libc-start.c:392
+    #8 0x5562e7f759e4 in _start (/home/jakub/Desktop/SO/shell_own/shell+0x49e4)
+
+[1m[32m0x608000000080 is located 0 bytes to the right of 96-byte region [0x608000000020,0x608000000080)
+[1m[0m[1m[35mallocated by thread T0 here:[1m[0m
+    #0 0x7f767a314a37 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x5562e7f79206 in initjobs /home/jakub/Desktop/SO/shell_own/jobs.c:384
+    #2 0x5562e7f7b132  (/home/jakub/Desktop/SO/shell_own/shell+0xa132)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /home/jakub/Desktop/SO/shell_own/jobs.c:129 in movejob
+Shadow bytes around the buggy address:
+  0x0c107fff7fc0: [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m
+  0x0c107fff7fd0: [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m
+  0x0c107fff7fe0: [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m
+  0x0c107fff7ff0: [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m
+  0x0c107fff8000: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m
+=>0x0c107fff8010:[[1m[31mfa[1m[0m][1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[0m00[1m[0m [1m[31mfa[1m[0m
+  0x0c107fff8020: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m
+  0x0c107fff8030: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m
+  0x0c107fff8040: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m
+  0x0c107fff8050: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m
+  0x0c107fff8060: [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m [1m[31mfa[1m[0m
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           [1m[0m00[1m[0m
+  Partially addressable: [1m[0m01[1m[0m [1m[0m02[1m[0m [1m[0m03[1m[0m [1m[0m04[1m[0m [1m[0m05[1m[0m [1m[0m06[1m[0m [1m[0m07[1m[0m 
+  Heap left redzone:       [1m[31mfa[1m[0m
+  Freed heap region:       [1m[35mfd[1m[0m
+  Stack left redzone:      [1m[31mf1[1m[0m
+  Stack mid redzone:       [1m[31mf2[1m[0m
+  Stack right redzone:     [1m[31mf3[1m[0m
+  Stack after return:      [1m[35mf5[1m[0m
+  Stack use after scope:   [1m[35mf8[1m[0m
+  Global redzone:          [1m[31mf9[1m[0m
+  Global init order:       [1m[36mf6[1m[0m
+  Poisoned by user:        [1m[34mf7[1m[0m
+  Container overflow:      [1m[34mfc[1m[0m
+  Array cookie:            [1m[31mac[1m[0m
+  Intra object redzone:    [1m[33mbb[1m[0m
+  ASan internal:           [1m[33mfe[1m[0m
+  Left alloca redzone:     [1m[34mca[1m[0m
+  Right alloca redzone:    [1m[34mcb[1m[0m
+  Shadow gap:              [1m[0mcc[1m[0m
+==26232==ABORTING
+exit
+
+>>> Test: "TestShellWithSyscalls.test_terminate_ttined"
+[26234:26234] tcsetpgrp(3, 26234) = 0
+# cat &
+[26234:26234] fork() = 26235
+[1] running 'cat'
+# [26235:26235] setpgid(0, 0) = 0
+[26235:26235] execve("/usr/bin/cat", 0x6080000000a0, 0x7ffc042ca918)
+[26234:26234] waitpid(...) -> {pid=26235, status=SIGTTIN}
+[26234:26234] waitpid(...) -> {}
+kill %1
+[26234:26234] kill(-26235, SIGCONT) = 0
+[26234:26234] kill(-26235, SIGTERM) = 0
+[26234:26234] waitpid(...) -> {}
+# [26234:26234] waitpid(...) -> {pid=26235, status=SIGTERM}
+[26234:26234] waitpid(...) -> {}
+jobs
+[1] killed 'cat' by signal 15
+# exit
+

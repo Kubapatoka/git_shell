@@ -1,0 +1,36 @@
+>>> Test: "TestShellSimple.test_exitcode_1"
+# true &
+# AddressSanitizer:DEADLYSIGNAL
+=================================================================
+[1m[31m==54414==ERROR: AddressSanitizer: SEGV on unknown address (pc 0x55d2e0d11829 bp 0x7ffdd318ffe0 sp 0x7ffdd318ffd0 T0)
+[1m[0m==54414==The signal is caused by a READ memory access.
+==54414==Hint: this fault was caused by a dereference of a high value address (see register values below).  Dissassemble the provided pc to learn which register was used.
+    #0 0x55d2e0d11829 in sigchld_handler /home/jakub/Desktop/SO/shell_own/jobs.c:50
+    #1 0x7fcec757151f  (/lib/x86_64-linux-gnu/libc.so.6+0x4251f)
+    #2 0x7fcec764398f in __GI___libc_read ../sysdeps/unix/sysv/linux/read.c:26
+    #3 0x7fcec77ea509 in __interceptor_read ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:1027
+    #4 0x55d2e0d0f5ee in read /usr/include/x86_64-linux-gnu/bits/unistd.h:38
+    #5 0x55d2e0d0f5ee in readline /home/jakub/Desktop/SO/shell_own/shell.c:250
+    #6 0x55d2e0d0f8e5 in main /home/jakub/Desktop/SO/shell_own/shell.c:294
+    #7 0x7fcec7558d8f in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #8 0x7fcec7558e3f in __libc_start_main_impl ../csu/libc-start.c:392
+    #9 0x55d2e0d0e9a4 in _start (/home/jakub/Desktop/SO/shell_own/shell+0x49a4)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /home/jakub/Desktop/SO/shell_own/jobs.c:50 in sigchld_handler
+==54414==ABORTING
+exit
+
+>>> Test: "TestShellSimple.test_fd_leaks"
+# ls -l /proc/self/fd
+total 0
+lrwx------ 1 jakub jakub 64 Dec 15 18:59 0 -> /dev/pts/3
+lrwx------ 1 jakub jakub 64 Dec 15 18:59 1 -> /dev/pts/3
+lrwx------ 1 jakub jakub 64 Dec 15 18:59 2 -> /dev/pts/3
+lr-x------ 1 jakub jakub 64 Dec 15 18:59 3 -> /proc/54423/fd
+# ls -l /proc/self/fd | cat
+# exit
+
+>>> Test: "TestShellSimple.test_kill_at_quit"
+# sleep 1000 &
+# 
